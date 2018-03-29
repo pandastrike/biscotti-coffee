@@ -1,4 +1,4 @@
-import {Method} from "fairmont-multimethods"
+import {resolve} from "path"
 
 include "greeting"
 

@@ -1,39 +1,31 @@
 import assert from "assert"
 import {print, test} from "amen"
+import {resolve} from "path"
 import processor from "../src"
+
+verify = ({before, actual, expected}) ->
+  -> assert.equal expected, await actual do before
+
+before = -> processor {require}
 
 do ->
 
-  print await test "biscotti-coffee", do ->
+  print await test "biscotti-coffee", [
 
-    [
+    test "from path", verify
+      before: before
+      actual: (render) -> render path: resolve "./test/files/index.biscotti"
+      expected: '# Greetings!\n\nThis is a test.\n\n\
+        Hello, Foo!\n\nGoodbye, now!'
 
-      render = processor {require}
-
-      test "from path", ->
-
-        # we need to do this because this path is relative to
-        # file not where the tests may be run from ...
-        path = resolve "./test/files/index.biscotti"
-        result = await render {path}
-        assert.equal result,
-          '# Greetings!\n\nThis is a test.\n\nHello, Foo!\n\nGoodbye, now!'
-
-      test "from path (with import)", ->
-
-        result = await render path: resolve "./test/files/html/index.biscotti"
-        assert.equal result,
-          "<html><body><h1>Hello, World!</h1></body></html>"
-
-      test "from content", ->
-
-        content = """
+    test "from content", verify
+      before: before
+      actual: (render) -> render
+        content: """
           do $ -> "# Greetings!\\n\\n"
 
           do $ -> "Hello, Bar!"
           """
-        result = await render {content}
-        assert.equal result,
-          '# Greetings!\n\nHello, Bar!'
+      expected: '# Greetings!\n\nHello, Bar!'
 
-    ]
+]
